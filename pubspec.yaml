@@ -26,3 +26,8 @@ flutter:
 
   assets:
     - assets/
+
+  fonts:
+    - family: TodoListIcons
+      fonts:
+        - asset: assets/fonts/TodoListIcons.ttf
