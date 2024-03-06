@@ -21,7 +21,7 @@ class UserRepositoryImpl extends UserRepository {
     } on FirebaseAuthException catch (e, s) {
       debugPrint(e.toString());
       debugPrint(s.toString());
-      if (e.code == 'email-already-exists') {
+      if (e.code == 'email-already-in-use') {
         throw AuthException(message: 'E-mail já utilizado');
       } else {
         throw AuthException(message: e.message ?? 'Erro ao registrar usuário');
