@@ -5,6 +5,7 @@ import 'package:flutter_signin_button/button_list.dart';
 import 'package:flutter_signin_button/button_view.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_list_provider/app/core/notifier/default_listener_notifier.dart';
+import 'package:todo_list_provider/app/core/ui/messages.dart';
 import 'package:todo_list_provider/app/core/widgets/todo_list_field.dart';
 import 'package:todo_list_provider/app/core/widgets/todo_list_logo.dart';
 import 'package:todo_list_provider/app/modules/auth/login/login_controller.dart';
@@ -19,8 +20,10 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  final _emailFieldKey = GlobalKey<FormFieldState>();
   final _emailEC = TextEditingController();
   final _passwordEC = TextEditingController();
+  final _emailFocus = FocusNode();
 
   @override
   void initState() {
@@ -28,8 +31,15 @@ class _LoginPageState extends State<LoginPage> {
     DefaultListenerNotifier(changeNotifier: context.read<LoginController>())
         .listener(
       context: context,
+      everCallback: (notifier, listenerInstance) {
+        if (notifier is LoginController) {
+          if (notifier.hasInfo) {
+            Messages.of(context).showInfo(notifier.infoMessage!);
+          }
+        }
+      },
       successCallback: (notifier, listenerInstance) {
-        print('Loginok');
+        log('Loginok');
       },
     );
   }
@@ -61,12 +71,14 @@ class _LoginPageState extends State<LoginPage> {
                         child: Column(
                           children: [
                             TodoListField(
+                              fieldKey: _emailFieldKey,
                               label: 'E-mail',
                               controller: _emailEC,
                               validator: Validatorless.multiple([
                                 Validatorless.required('E-mail obrigatório'),
                                 Validatorless.email('E-mail inválido'),
                               ]),
+                              focusNode: _emailFocus,
                             ),
                             const SizedBox(height: 20),
                             TodoListField(
@@ -84,7 +96,23 @@ class _LoginPageState extends State<LoginPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    if (_emailEC.text.isNotEmpty) {
+                                      bool emailValid = _emailFieldKey
+                                              .currentState
+                                              ?.validate() ??
+                                          false;
+                                      if (emailValid) {
+                                        context
+                                            .read<LoginController>()
+                                            .forgotPassword(_emailEC.text);
+                                      }
+                                    } else {
+                                      _emailFocus.requestFocus();
+                                      Messages.of(context).showError(
+                                          'Digite um e-mail para recuperar a senha');
+                                    }
+                                  },
                                   child: const Text('Esqueceu sua senha?'),
                                 ),
                                 ElevatedButton(
